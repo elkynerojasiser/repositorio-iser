@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { postChat, type ChatSource } from '../api/chat';
+import { useAuth } from '../context/AuthContext';
 import pages from './Pages.module.css';
 import styles from './ChatPage.module.css';
 
 type Msg = { role: 'user' | 'assistant'; content: string; sources?: ChatSource[] };
 
 export function ChatPage() {
+  const { token } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -30,7 +32,8 @@ export function ChatPage() {
     setMessages((m) => [...m, { role: 'user', content: q }]);
     setLoading(true);
     try {
-      const res = await postChat(q);
+      if (!token) throw new Error('Sesión no válida.');
+      const res = await postChat(token, q);
       setMessages((m) => [
         ...m,
         { role: 'assistant', content: res.answer, sources: res.sources },

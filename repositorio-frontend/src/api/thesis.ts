@@ -20,6 +20,7 @@ export type ThesisSearchParams = {
 };
 
 export async function fetchThesisList(
+  token: string,
   params: ThesisSearchParams = {}
 ): Promise<ThesisListResponse> {
   const sp = new URLSearchParams();
@@ -28,13 +29,31 @@ export async function fetchThesisList(
   });
   const q = sp.toString();
   const path = q ? `/api/public/thesis?${q}` : '/api/public/thesis';
-  return apiFetch<ThesisListResponse>(path);
+  return apiFetch<ThesisListResponse>(path, { token });
 }
 
-export async function fetchThesisById(id: number): Promise<ThesisDetail> {
-  return apiFetch<ThesisDetail>(`/api/public/thesis/${id}`);
+export async function fetchThesisById(token: string, id: number): Promise<ThesisDetail> {
+  return apiFetch<ThesisDetail>(`/api/public/thesis/${id}`, { token });
 }
 
-export function thesisPdfUrl(id: number): string {
-  return apiUrl(`/api/public/thesis/${id}/pdf`);
+/** PDF protegido: no usar enlace directo (el navegador no envía Bearer). */
+export async function fetchThesisPdfBlob(token: string, id: number): Promise<Blob> {
+  const res = await fetch(apiUrl(`/api/public/thesis/${id}/pdf`), {
+    headers: {
+      Accept: 'application/pdf',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    let msg = res.statusText;
+    try {
+      const data = JSON.parse(text) as { message?: string };
+      if (data?.message) msg = data.message;
+    } catch {
+      if (text) msg = text;
+    }
+    throw new Error(msg || `Error ${res.status}`);
+  }
+  return res.blob();
 }

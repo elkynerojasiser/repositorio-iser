@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchThesisList, type ThesisSearchParams } from '../api/thesis';
 import type { ThesisListItem } from '../api/types';
+import { useAuth } from '../context/AuthContext';
 import styles from './Pages.module.css';
 
 const emptySearch: ThesisSearchParams = {
@@ -17,27 +18,32 @@ const emptySearch: ThesisSearchParams = {
 };
 
 export function HomePage() {
+  const { token } = useAuth();
   const [items, setItems] = useState<ThesisListItem[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [filters, setFilters] = useState<ThesisSearchParams>(emptySearch);
 
-  const load = useCallback(async (params: ThesisSearchParams) => {
-    setLoading(true);
-    setErr(null);
-    try {
-      const res = await fetchThesisList(params);
-      setItems(res.data);
-      setTotal(res.meta.total);
-    } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Error al cargar el catálogo.');
-      setItems([]);
-      setTotal(0);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const load = useCallback(
+    async (params: ThesisSearchParams) => {
+      if (!token) return;
+      setLoading(true);
+      setErr(null);
+      try {
+        const res = await fetchThesisList(token, params);
+        setItems(res.data);
+        setTotal(res.meta.total);
+      } catch (e) {
+        setErr(e instanceof Error ? e.message : 'Error al cargar el catálogo.');
+        setItems([]);
+        setTotal(0);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   useEffect(() => {
     void load({});

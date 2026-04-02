@@ -10,9 +10,10 @@ export type ChatResponse = {
   sources: ChatSource[];
 };
 
-export async function postChat(question: string): Promise<ChatResponse> {
+export async function postChat(token: string, question: string): Promise<ChatResponse> {
   return apiFetch<ChatResponse>('/api/chat', {
     method: 'POST',
     body: { question },
+    token,
   });
 }

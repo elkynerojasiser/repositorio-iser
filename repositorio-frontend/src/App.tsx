@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { AdminLayout } from './components/AdminLayout';
 import { Layout } from './components/Layout';
+import { RequireAuth } from './components/RequireAuth';
 import { RequireRole } from './components/RequireRole';
 import { AdminClassificationPage } from './pages/admin/AdminClassificationPage';
 import { AdminThesisListPage } from './pages/admin/AdminThesisListPage';
@@ -17,9 +18,11 @@ export default function App() {
   return (
     <Routes>
       <Route element={<Layout />}>
-        <Route index element={<HomePage />} />
-        <Route path="asistente" element={<ChatPage />} />
-        <Route path="tesis/:id" element={<ThesisDetailPage />} />
+        <Route element={<RequireAuth />}>
+          <Route index element={<HomePage />} />
+          <Route path="asistente" element={<ChatPage />} />
+          <Route path="tesis/:id" element={<ThesisDetailPage />} />
+        </Route>
         <Route path="login" element={<LoginPage />} />
         <Route path="registro" element={<RegisterPage />} />
 

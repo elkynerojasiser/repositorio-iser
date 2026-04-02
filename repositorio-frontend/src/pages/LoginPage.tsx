@@ -1,11 +1,13 @@
 import { FormEvent, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { safePathAfterAuth } from '../utils/authRedirect';
 import styles from './Pages.module.css';
 
 export function LoginPage() {
   const { login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -14,7 +16,7 @@ export function LoginPage() {
     clearError();
     try {
       await login(email, password);
-      navigate('/');
+      navigate(safePathAfterAuth(location.state), { replace: true });
     } catch {
       /* error en contexto */
     }

@@ -1,19 +1,23 @@
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { fetchThesisById, thesisPdfUrl } from '../api/thesis';
+import { fetchThesisById, fetchThesisPdfBlob } from '../api/thesis';
 import type { ThesisDetail } from '../api/types';
+import { useAuth } from '../context/AuthContext';
 import styles from './Pages.module.css';
 
 export function ThesisDetailPage() {
+  const { token } = useAuth();
   const { id } = useParams();
   const numId = id ? Number(id) : NaN;
   const [thesis, setThesis] = useState<ThesisDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfErr, setPdfErr] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!Number.isFinite(numId)) {
-      setErr('Identificador inválido.');
+    if (!Number.isFinite(numId) || !token) {
+      if (!Number.isFinite(numId)) setErr('Identificador inválido.');
       setLoading(false);
       return;
     }
@@ -22,7 +26,7 @@ export function ThesisDetailPage() {
       setLoading(true);
       setErr(null);
       try {
-        const data = await fetchThesisById(numId);
+        const data = await fetchThesisById(token, numId);
         if (!cancelled) setThesis(data);
       } catch (e) {
         if (!cancelled) {
@@ -36,7 +40,23 @@ export function ThesisDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [numId]);
+  }, [numId, token]);
+
+  async function handleOpenPdf() {
+    if (!token || !thesis) return;
+    setPdfErr(null);
+    setPdfLoading(true);
+    try {
+      const blob = await fetchThesisPdfBlob(token, thesis.id);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      setPdfErr(e instanceof Error ? e.message : 'No se pudo abrir el PDF.');
+    } finally {
+      setPdfLoading(false);
+    }
+  }
 
   if (!Number.isFinite(numId)) {
     return (
@@ -55,8 +75,6 @@ export function ThesisDetailPage() {
       </div>
     );
   }
-
-  const pdfHref = thesisPdfUrl(thesis.id);
 
   return (
     <article>
@@ -104,9 +122,15 @@ export function ThesisDetailPage() {
         </section>
       )}
       <p>
-        <a href={pdfHref} target="_blank" rel="noopener noreferrer" className={styles.pdfLink}>
-          Ver / descargar PDF
-        </a>
+        <button
+          type="button"
+          className={styles.pdfLink}
+          onClick={() => void handleOpenPdf()}
+          disabled={pdfLoading}
+        >
+          {pdfLoading ? 'Abriendo PDF…' : 'Ver / descargar PDF'}
+        </button>
+        {pdfErr ? <span className={styles.error}> {pdfErr}</span> : null}
       </p>
     </article>
   );

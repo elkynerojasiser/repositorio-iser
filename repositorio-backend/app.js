@@ -11,6 +11,7 @@ import keywordEntityRoutes from './src/routes/keywordEntityRoutes.js';
 import thesisRoutes from './src/routes/thesisRoutes.js';
 import publicRoutes from './src/routes/publicRoutes.js';
 import chatRoutes from './src/routes/chatRoutes.js';
+import { authenticate } from './src/middlewares/auth.js';
 import { errorHandler, notFoundHandler } from './src/middlewares/errorHandler.js';
 
 const app = express();
@@ -48,7 +49,7 @@ app.get('/prueba', (_req, res) => {
   <p>La API del repositorio de trabajos de grado está respondiendo.</p>
   <ul>
     <li><a href="/health"><code>GET /health</code></a> — estado (JSON)</li>
-    <li><a href="/api/public/thesis"><code>GET /api/public/thesis</code></a> — listado público de tesis</li>
+    <li><code>GET /api/public/thesis</code> — catálogo (requiere <code>Authorization: Bearer …</code>)</li>
   </ul>
 </body>
 </html>`);
@@ -61,8 +62,8 @@ app.use('/api/thesis-types', thesisTypeRoutes);
 app.use('/api/research-lines', researchLineRoutes);
 app.use('/api/keywords', keywordEntityRoutes);
 app.use('/api/thesis', thesisRoutes);
-app.use('/api/public', publicRoutes);
-app.use('/api/chat', chatRoutes);
+app.use('/api/public', authenticate, publicRoutes);
+app.use('/api/chat', authenticate, chatRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

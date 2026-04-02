@@ -14,8 +14,12 @@ export function Layout() {
             Repositorio de grado
           </Link>
           <nav className={styles.nav}>
-            <Link to="/">Catálogo</Link>
-            <Link to="/asistente">Asistente IA</Link>
+            {user ? (
+              <>
+                <Link to="/">Catálogo</Link>
+                <Link to="/asistente">Asistente IA</Link>
+              </>
+            ) : null}
             {user && canAccessAdminPanel(user.role?.name) && (
               <Link to="/admin">Panel administrativo</Link>
             )}
