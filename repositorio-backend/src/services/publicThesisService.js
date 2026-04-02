@@ -135,20 +135,31 @@ export async function listPublicTheses(filters = {}) {
   }
 
   const include = buildIncludes(filters);
+  const order = [
+    ['year', 'DESC'],
+    ['title', 'ASC'],
+  ];
+  const listAttrs = { exclude: ['filePath'] };
 
-  const { count, rows } = await Thesis.findAndCountAll({
-    where,
-    attributes: { exclude: ['filePath'] },
-    include,
-    distinct: true,
-    col: 'Thesis.id',
-    order: [
-      ['year', 'DESC'],
-      ['title', 'ASC'],
-    ],
-    limit: lim,
-    offset: off,
-  });
+  // findAndCountAll(distinct) + col mal puesto → `Thesis->Thesis.id` en MySQL.
+  // Un findAll con COUNT(DISTINCT…) e includes mete columnas de JOIN en el SELECT
+  // y rompe sql_mode=ONLY_FULL_GROUP_BY. count() solo emite el agregado.
+  const [rows, count] = await Promise.all([
+    Thesis.findAll({
+      where,
+      attributes: listAttrs,
+      include,
+      order,
+      limit: lim,
+      offset: off,
+    }),
+    Thesis.count({
+      where,
+      include,
+      distinct: true,
+      col: 'id',
+    }),
+  ]);
 
   return {
     data: rows,

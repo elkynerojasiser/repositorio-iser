@@ -27,6 +27,20 @@ export function errorHandler(err, req, res, _next) {
     return res.status(401).json({ message: 'Token expirado.' });
   }
 
+  const parentCode = err.parent?.code;
+  const isDbUnreachable =
+    err.name === 'SequelizeConnectionError' ||
+    err.name === 'SequelizeConnectionRefusedError' ||
+    err.name === 'SequelizeHostNotFoundError' ||
+    ['ECONNREFUSED', 'ETIMEDOUT', 'ENOTFOUND'].includes(parentCode);
+  if (isDbUnreachable) {
+    logger.error(err.message, err.stack);
+    return res.status(503).json({
+      message:
+        'No se pudo conectar con la base de datos. Compruebe que MySQL esté en ejecución y que DB_HOST / DB_PORT sean correctos.',
+    });
+  }
+
   const statusCode = err instanceof AppError ? err.statusCode : err.statusCode || 500;
   const message = err instanceof AppError ? err.message : 'Error interno del servidor.';
 
