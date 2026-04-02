@@ -5,6 +5,7 @@ import { RequireRole } from './components/RequireRole';
 import { AdminClassificationPage } from './pages/admin/AdminClassificationPage';
 import { AdminThesisListPage } from './pages/admin/AdminThesisListPage';
 import { EditThesisPage } from './pages/admin/EditThesisPage';
+import { ChatPage } from './pages/ChatPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { NewThesisPage } from './pages/NewThesisPage';
@@ -17,6 +18,7 @@ export default function App() {
     <Routes>
       <Route element={<Layout />}>
         <Route index element={<HomePage />} />
+        <Route path="asistente" element={<ChatPage />} />
         <Route path="tesis/:id" element={<ThesisDetailPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="registro" element={<RegisterPage />} />

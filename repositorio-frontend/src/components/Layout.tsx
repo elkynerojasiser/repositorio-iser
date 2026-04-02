@@ -15,6 +15,7 @@ export function Layout() {
           </Link>
           <nav className={styles.nav}>
             <Link to="/">Catálogo</Link>
+            <Link to="/asistente">Asistente IA</Link>
             {user && canAccessAdminPanel(user.role?.name) && (
               <Link to="/admin">Panel administrativo</Link>
             )}

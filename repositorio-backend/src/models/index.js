@@ -7,6 +7,7 @@ import { defineResearchLine } from './ResearchLine.js';
 import { defineKeyword } from './Keyword.js';
 import { defineThesis } from './Thesis.js';
 import { defineThesisKeyword } from './ThesisKeyword.js';
+import { defineThesisChunk } from './ThesisChunk.js';
 
 const Role = defineRole(sequelize);
 const User = defineUser(sequelize);
@@ -16,6 +17,7 @@ const ResearchLine = defineResearchLine(sequelize);
 const Keyword = defineKeyword(sequelize);
 const Thesis = defineThesis(sequelize);
 const ThesisKeyword = defineThesisKeyword(sequelize);
+const ThesisChunk = defineThesisChunk(sequelize);
 
 Role.hasMany(User, { foreignKey: 'role_id', as: 'users' });
 User.belongsTo(Role, { foreignKey: 'role_id', as: 'role' });
@@ -45,6 +47,9 @@ Keyword.belongsToMany(Thesis, {
   as: 'theses',
 });
 
+Thesis.hasMany(ThesisChunk, { foreignKey: 'thesis_id', as: 'chunks' });
+ThesisChunk.belongsTo(Thesis, { foreignKey: 'thesis_id', as: 'thesis' });
+
 export {
   sequelize,
   Role,
@@ -55,4 +60,5 @@ export {
   Keyword,
   Thesis,
   ThesisKeyword,
+  ThesisChunk,
 };

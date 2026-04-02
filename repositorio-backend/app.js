@@ -10,6 +10,7 @@ import researchLineRoutes from './src/routes/researchLineRoutes.js';
 import keywordEntityRoutes from './src/routes/keywordEntityRoutes.js';
 import thesisRoutes from './src/routes/thesisRoutes.js';
 import publicRoutes from './src/routes/publicRoutes.js';
+import chatRoutes from './src/routes/chatRoutes.js';
 import { errorHandler, notFoundHandler } from './src/middlewares/errorHandler.js';
 
 const app = express();
@@ -61,6 +62,7 @@ app.use('/api/research-lines', researchLineRoutes);
 app.use('/api/keywords', keywordEntityRoutes);
 app.use('/api/thesis', thesisRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);

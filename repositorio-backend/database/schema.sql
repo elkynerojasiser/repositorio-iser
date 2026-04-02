@@ -3,6 +3,7 @@ SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
 
 DROP TABLE IF EXISTS `thesis_keywords`;
+DROP TABLE IF EXISTS `thesis_chunks`;
 DROP TABLE IF EXISTS `thesis`;
 DROP TABLE IF EXISTS `keywords`;
 DROP TABLE IF EXISTS `research_lines`;
@@ -101,4 +102,15 @@ CREATE TABLE `thesis_keywords` (
   KEY `thesis_keywords_keyword_id` (`keyword_id`),
   CONSTRAINT `thesis_keywords_thesis_fk` FOREIGN KEY (`thesis_id`) REFERENCES `thesis` (`id`) ON UPDATE CASCADE ON DELETE CASCADE,
   CONSTRAINT `thesis_keywords_keyword_fk` FOREIGN KEY (`keyword_id`) REFERENCES `keywords` (`id`) ON UPDATE CASCADE ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `thesis_chunks` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `thesis_id` INT UNSIGNED NOT NULL,
+  `content` TEXT NOT NULL,
+  `embedding` TEXT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `thesis_chunks_thesis_id` (`thesis_id`),
+  CONSTRAINT `thesis_chunks_thesis_fk` FOREIGN KEY (`thesis_id`) REFERENCES `thesis` (`id`) ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

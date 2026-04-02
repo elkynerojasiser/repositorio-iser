@@ -63,6 +63,9 @@ services:
       DB_USER: root
       DB_PASSWORD: ${DB_PASSWORD:-mysqlrootkey}
       DB_NAME: ${DB_NAME:-repositorio}
+      # Sustitución desde el `.env` del proyecto Compose o del shell del host
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
     volumes:
       - .:/app
       - api_node_modules:/app/node_modules

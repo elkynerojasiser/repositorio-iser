@@ -10,6 +10,8 @@ import {
   User,
 } from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { logger } from '../utils/logger.js';
+import { indexThesisPdf } from './pdfChunkService.js';
 
 const includeRelations = [
   { model: AcademicProgram, as: 'program', attributes: ['id', 'name'] },
@@ -73,9 +75,14 @@ export async function createThesis(payload, file, userId) {
       if (keywordIds.length) {
         await thesis.setKeywords(keywordIds, { transaction });
       }
-      return thesis.id;
+      return { id: thesis.id, filePath };
     });
-    return getThesisById(result);
+    try {
+      await indexThesisPdf(result.id, result.filePath);
+    } catch (e) {
+      logger.warn(`Indexación PDF poscreate tesis ${result.id}: ${e.message}`);
+    }
+    return getThesisById(result.id);
   } catch (e) {
     const abs = path.join(process.cwd(), filePath);
     if (fs.existsSync(abs)) fs.unlinkSync(abs);
@@ -128,6 +135,15 @@ export async function updateThesis(id, payload, file) {
 
   if (oldAbs && fs.existsSync(oldAbs)) {
     fs.unlinkSync(oldAbs);
+  }
+
+  if (file) {
+    try {
+      const fresh = await Thesis.findByPk(id);
+      if (fresh) await indexThesisPdf(id, fresh.filePath);
+    } catch (e) {
+      logger.warn(`Indexación PDF post-actualización tesis ${id}: ${e.message}`);
+    }
   }
 
   return getThesisById(id);
