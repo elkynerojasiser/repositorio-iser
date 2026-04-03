@@ -1,4 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
+import logoIser from '../assets/logo_iser.png';
 import { useAuth } from '../context/AuthContext';
 import { canAccessAdminPanel } from '../utils/roles';
 import styles from './Layout.module.css';
@@ -11,7 +12,15 @@ export function Layout() {
       <header className={styles.header}>
         <div className={styles.headerInner}>
           <Link to="/" className={styles.brand}>
-            Repositorio de grado
+            <img
+              src={logoIser}
+              alt="Instituto Superior de Educación Rural"
+              className={styles.brandLogo}
+            />
+            <span className={styles.brandText}>
+              <span>Repositorio de grado</span>
+              <span className={styles.brandAccent}>ISER</span>
+            </span>
           </Link>
           <nav className={styles.nav}>
             {user ? (
@@ -50,7 +59,12 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className={styles.footer}>
-        <p>Plataforma de trabajos de grado — versión inicial</p>
+        <p>Instituto Superior de Educación Rural — Repositorio de trabajos de grado</p>
+        <p>
+          <a href="https://www.iser.edu.co/" target="_blank" rel="noopener noreferrer">
+            www.iser.edu.co
+          </a>
+        </p>
       </footer>
     </div>
   );

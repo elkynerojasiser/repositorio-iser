@@ -25,7 +25,7 @@
 }
 
 .sidebarTitle {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 1.1rem;
   margin: 0 0 0.5rem;
 }
@@ -59,7 +59,7 @@
 }
 
 .navLinkActive {
-  background: rgba(15, 118, 110, 0.12);
+  background: rgba(27, 158, 136, 0.14);
   color: var(--accent);
 }
 

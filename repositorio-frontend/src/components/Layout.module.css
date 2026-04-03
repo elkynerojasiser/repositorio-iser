@@ -5,9 +5,21 @@
 }
 
 .header {
+  position: relative;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
+  padding-top: 0;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--iser-teal), var(--iser-green));
 }
 
 .headerInner {
@@ -22,16 +34,46 @@
 }
 
 .brand {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 600;
-  font-size: 1.15rem;
+  font-size: 1.1rem;
+  color: var(--text);
+  text-decoration: none;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.75rem;
+}
+
+.brandLogo {
+  height: 2.5rem;
+  width: auto;
+  max-width: min(140px, 38vw);
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.brandText {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+}
+
+.brand:hover {
   color: var(--text);
   text-decoration: none;
 }
 
-.brand:hover {
+.brand:hover .brandAccent {
+  color: var(--accent-hover);
+}
+
+.brandAccent {
   color: var(--accent);
-  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .nav {
@@ -89,12 +131,21 @@
 
 .footer {
   border-top: 1px solid var(--border);
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.25rem 1.5rem;
   text-align: center;
   font-size: 0.85rem;
   color: var(--muted);
+  background: linear-gradient(180deg, var(--surface) 0%, #edf2f7 100%);
 }
 
 .footer p {
-  margin: 0;
+  margin: 0 0 0.5rem;
+}
+
+.footer p:last-child {
+  margin-bottom: 0;
+}
+
+.footer a {
+  font-weight: 600;
 }

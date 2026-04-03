@@ -40,7 +40,7 @@ services:
         PMA_HOST: mysql
         PMA_PORT: 3306
         PMA_USER: root
-        PMA_PASSWORD: mysqlrootkey
+        PMA_PASSWORD: ${DB_PASSWORD:-mysqlrootkey}
         MEMORY_LIMIT: -1
         UPLOAD_LIMIT: 4096M
     depends_on:

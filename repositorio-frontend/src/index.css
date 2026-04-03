@@ -1,14 +1,20 @@
+/* Paleta alineada al portal institucional (Kadence / WordPress — iser.edu.co) */
 :root {
-  --bg: #f6f4f0;
+  --iser-green: #379623;
+  --iser-teal: #1b9e88;
+  --bg: #f7fafc;
   --surface: #ffffff;
-  --text: #1c1917;
-  --muted: #57534e;
-  --accent: #0f766e;
-  --accent-hover: #0d9488;
-  --border: #e7e5e4;
+  --text: #1a202c;
+  --muted: #4a5568;
+  --accent: var(--iser-teal);
+  --accent-hover: #168a76;
+  --accent-secondary: var(--iser-green);
+  --border: #e2e8f0;
   --danger: #b91c1c;
   --radius: 10px;
-  --shadow: 0 1px 3px rgba(28, 25, 23, 0.08);
+  --shadow: 0 1px 3px rgba(26, 32, 44, 0.08);
+  --font-sans: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
 }
 
 *,
@@ -20,7 +26,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: var(--font-sans);
   font-optical-sizing: auto;
   background: var(--bg);
   color: var(--text);
@@ -44,7 +50,7 @@ a:hover {
 h1,
 h2,
 h3 {
-  font-family: 'Fraunces', Georgia, serif;
+  font-family: var(--font-serif);
   font-weight: 600;
   line-height: 1.25;
 }
