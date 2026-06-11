@@ -105,12 +105,73 @@ Si la base ya existía sin estos usuarios, vuelve a ejecutar solo el seed (con c
 | Público | GET | `/api/public/thesis` | Público (búsqueda: `q`, `title`, `author`, `keywords`, `year`, `program_id`) |
 | Público | GET | `/api/public/thesis/:id` | Público |
 | Público | GET | `/api/public/thesis/:id/pdf` | Público (descarga PDF) |
+| Chat IA | POST | `/api/chat` | Autenticado (ver "Asistente de IA") |
 
 Registro asigna automáticamente el rol `public`. Para pruebas locales, use las cuentas del seed (tabla anterior).
 
 ## Subida de PDF
 
 `POST /api/thesis` y `PUT /api/thesis/:id` usan `multipart/form-data` con campo de archivo `pdf` (máx. 25 MB) y metadatos en campos de texto (`title`, `author`, `abstract`, `keywords`, `year`, `programId`).
+
+## Asistente de IA (chat RAG)
+
+El asistente responde preguntas **únicamente** con el contenido de los PDFs almacenados, usando un enfoque RAG (Retrieval-Augmented Generation). Si la información no está en los documentos, responde explícitamente que no la encontró.
+
+El retrieval es **híbrido**: combina búsqueda **semántica** (embeddings + similitud coseno) con búsqueda por **palabra clave** (`LIKE`), fusionando y deduplicando los fragmentos. Si no hay clave de OpenAI o aún no se han generado embeddings, degrada automáticamente a solo-keyword (el chat sigue funcionando).
+
+**Endpoint** (requiere autenticación):
+
+```
+POST /api/chat
+Content-Type: application/json
+
+{ "question": "¿Qué normas existen para documentar infraestructura de telecomunicaciones?" }
+```
+
+Respuesta:
+
+```json
+{
+  "answer": "…",
+  "sources": [
+    { "thesis_id": 2, "title": "…", "author": "…", "year": 2026, "excerpt": "…" }
+  ]
+}
+```
+
+La pregunta admite hasta 500 caracteres. El contexto enviado al modelo se limita a ~12 000 caracteres.
+
+### Indexación automática
+
+**No hace falta ningún paso manual.** Al crear (`POST /api/thesis`) o actualizar con un PDF nuevo (`PUT /api/thesis/:id`), el backend automáticamente:
+
+1. Extrae el texto del PDF y lo limpia (normaliza codificación, viñetas y ligaduras).
+2. Lo divide en fragmentos (~400 palabras) con solapamiento.
+3. Genera los embeddings de cada fragmento y los guarda.
+
+Esto es **best-effort**: si al subir el PDF falta `OPENAI_API_KEY` (o la API falla), el documento se guarda con sus fragmentos pero **sin embeddings** — quedaría disponible solo por búsqueda de palabra clave hasta correr el backfill (ver abajo). La indexación nunca interrumpe la subida de la tesis.
+
+### Variables de entorno (OpenAI)
+
+| Variable | Default | Descripción |
+|----------|---------|-------------|
+| `OPENAI_API_KEY` | _(vacío)_ | Clave de OpenAI. Sin ella, `POST /api/chat` responde `503` y los PDFs se indexan sin embeddings. |
+| `OPENAI_MODEL` | `gpt-4.1-mini` | Modelo de chat para generar las respuestas. |
+| `OPENAI_EMBEDDING_MODEL` | `text-embedding-3-small` | Modelo de embeddings para la búsqueda semántica. |
+
+### Reindexar / backfill de embeddings
+
+Útil para PDFs subidos antes de configurar la clave o antes de existir esta funcionalidad. Requiere `OPENAI_API_KEY`.
+
+```bash
+# Genera embeddings solo para los fragmentos que aún no los tienen
+npm run backfill:embeddings
+
+# Re-extrae y re-fragmenta TODOS los PDFs (aplica limpieza de texto y solapamiento) y regenera embeddings
+npm run backfill:embeddings -- --reindex
+```
+
+Con Docker: `docker compose exec api npm run backfill:embeddings`.
 
 ## Desarrollo
 
@@ -121,9 +182,10 @@ Registro asigna automáticamente el rol `public`. Para pruebas locales, use las 
 - `app.js` / `server.js` — aplicación y arranque
 - `src/config` — entorno y Sequelize
 - `src/models` — modelos y asociaciones
-- `src/services` — lógica de negocio
+- `src/services` — lógica de negocio (IA: `chat.service.js`, `embeddingService.js`, `pdfChunkService.js`)
 - `src/controllers` — capa HTTP
 - `src/routes` — rutas y validación (express-validator)
 - `src/middlewares` — JWT, roles, errores, Multer
+- `src/scripts` — utilidades de mantenimiento (p. ej. `backfillEmbeddings.js`)
 - `uploads/theses/` — PDF almacenados
 - `database/` — `schema.sql` y `seed.sql`
