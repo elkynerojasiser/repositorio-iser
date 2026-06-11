@@ -53,6 +53,13 @@ export function ChatPage() {
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.currentTarget.form?.requestSubmit();
+    }
+  }
+
   function handleClear() {
     setMessages([]);
     setErr(null);
@@ -109,7 +116,8 @@ export function ChatPage() {
           className={styles.textarea}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ej. ¿Qué trabajos mencionan agricultura sostenible?"
+          onKeyDown={handleKeyDown}
+          placeholder="Ej. ¿Qué trabajos mencionan agricultura sostenible? (Enter envía, Shift+Enter salto de línea)"
           maxLength={500}
           rows={3}
           disabled={loading}
