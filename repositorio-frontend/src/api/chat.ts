@@ -2,6 +2,9 @@ import { apiFetch } from './client';
 
 export type ChatSource = {
   thesis_id: number;
+  title: string | null;
+  author: string | null;
+  year: number | null;
   excerpt: string;
 };
 

@@ -85,9 +85,14 @@ export function ChatPage() {
                 <ul>
                   {m.sources.map((s, j) => (
                     <li key={j}>
-                      <Link to={`/tesis/${s.thesis_id}`}>Tesis #{s.thesis_id}</Link>
-                      {' — '}
-                      <span>{s.excerpt}</span>
+                      <Link to={`/tesis/${s.thesis_id}`}>{s.title || `Tesis #${s.thesis_id}`}</Link>
+                      {(s.author || s.year) && (
+                        <span className={styles.sourceMeta}>
+                          {' '}
+                          {[s.author, s.year].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
+                      <div className={styles.sourceExcerpt}>{s.excerpt}</div>
                     </li>
                   ))}
                 </ul>
