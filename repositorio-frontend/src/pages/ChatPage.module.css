@@ -61,6 +61,20 @@
 
 .sources a {
   color: var(--accent);
+  font-weight: 600;
+}
+
+.sources li {
+  margin-bottom: 0.45rem;
+}
+
+.sourceMeta {
+  color: var(--muted);
+}
+
+.sourceExcerpt {
+  margin-top: 0.15rem;
+  opacity: 0.85;
 }
 
 .form {

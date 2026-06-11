@@ -53,6 +53,13 @@ export function ChatPage() {
     }
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      e.currentTarget.form?.requestSubmit();
+    }
+  }
+
   function handleClear() {
     setMessages([]);
     setErr(null);
@@ -85,9 +92,14 @@ export function ChatPage() {
                 <ul>
                   {m.sources.map((s, j) => (
                     <li key={j}>
-                      <Link to={`/tesis/${s.thesis_id}`}>Tesis #{s.thesis_id}</Link>
-                      {' — '}
-                      <span>{s.excerpt}</span>
+                      <Link to={`/tesis/${s.thesis_id}`}>{s.title || `Tesis #${s.thesis_id}`}</Link>
+                      {(s.author || s.year) && (
+                        <span className={styles.sourceMeta}>
+                          {' '}
+                          {[s.author, s.year].filter(Boolean).join(' · ')}
+                        </span>
+                      )}
+                      <div className={styles.sourceExcerpt}>{s.excerpt}</div>
                     </li>
                   ))}
                 </ul>
@@ -104,7 +116,8 @@ export function ChatPage() {
           className={styles.textarea}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ej. ¿Qué trabajos mencionan agricultura sostenible?"
+          onKeyDown={handleKeyDown}
+          placeholder="Ej. ¿Qué trabajos mencionan agricultura sostenible? (Enter envía, Shift+Enter salto de línea)"
           maxLength={500}
           rows={3}
           disabled={loading}
