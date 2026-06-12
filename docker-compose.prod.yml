@@ -1,0 +1,78 @@
+# Producción en una sola VM. Levantar: docker compose -f docker-compose.prod.yml up -d --build
+# Las variables (${...}) se leen del archivo .env en esta misma carpeta.
+# mysql y api NO se exponen al host: solo Caddy (web) publica 80/443.
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: repositorio-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_ROOT_HOST: '%'
+      TZ: UTC
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./repositorio-backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./repositorio-backend/database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+      - ./repositorio-backend/database/docker/03-remote-access.sh:/docker-entrypoint-initdb.d/03-remote-access.sh:ro
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" || exit 1",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  api:
+    build:
+      context: ./repositorio-backend
+      dockerfile: Dockerfile.prod
+    container_name: repositorio-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      SYNC_DB: "false"
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4.1-mini}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
+    volumes:
+      - uploads_data:/app/uploads/theses
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ./repositorio-frontend
+      dockerfile: Dockerfile
+    container_name: repositorio-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - api
+
+volumes:
+  mysql_data:
+  uploads_data:
+  caddy_data:
+  caddy_config:
