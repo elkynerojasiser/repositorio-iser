@@ -1,0 +1,12 @@
+-- Migración manual desde esquema antiguo (thesis con columna `keywords` TEXT).
+-- Hacer copia de seguridad antes de ejecutar. Ajustar nombres de BD si aplica.
+--
+-- Pasos sugeridos:
+-- 1) Crear tablas nuevas (thesis_types, research_lines, keywords, thesis_keywords).
+-- 2) Añadir columnas type_id, research_line_id a thesis.
+-- 3) Insertar filas por defecto en thesis_types, research_lines.
+-- 4) Rellenar type_id / research_line_id en thesis existentes (UPDATE ... WHERE id > 0).
+-- 5) Poblar thesis_keywords parseando el texto antiguo o asignando keywords genéricas.
+-- 6) Eliminar columna `keywords` de thesis y recrear FULLTEXT si hace falta.
+--
+-- Este archivo es referencia; el método seguro es volcar datos, aplicar schema.sql nuevo y reimportar.

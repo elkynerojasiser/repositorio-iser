@@ -1,0 +1,108 @@
+# DEPENDENCIAS DEL PROYECTO - Repositorio ISER
+
+## PROGRAMAS REQUERIDOS (Instalación del Sistema)
+
+### 1. Node.js (>= 18.x)
+- **Función**: Entorno de ejecución para JavaScript backend y frontend
+- **Instalación**: `curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs`
+- **Alternativa**: Descargar desde https://nodejs.org/
+
+### 2. npm (>= 10.x) o yarn
+- **Función**: Gestor de paquetes de Node.js
+- **Instalación**: Viene incluido con Node.js
+
+### 3. MySQL (>= 8.0 o 5.7)
+- **Función**: Base de datos relacional para almacenar usuarios, tesis y fragmentos
+- **Instalación**: `sudo apt-get install mysql-server`
+- **Alternativa**: Docker con `docker run --name mysql -e MYSQL_ROOT_PASSWORD=root -p 3306:3306 -d mysql:8.0`
+
+---
+
+## DEPENDENCIAS BACKEND (repositorio-backend)
+
+### Dependencias de Producción
+| Paquete | Versión | Función |
+|---------|---------|---------|
+| express | ^4.21.0 | Framework web para crear el servidor API REST |
+| sequelize | ^6.37.4 | ORM para conectar y operar con MySQL |
+| mysql2 | ^3.11.3 | Driver de conexión MySQL para Node.js |
+| jsonwebtoken | ^9.0.2 | Generación y validación de tokens JWT para autenticación |
+| bcrypt | ^5.1.1 | Encriptación de contraseñas |
+| cors | ^2.8.5 | Habilitar CORS para peticiones cross-origin |
+| dotenv | ^16.4.5 | Carga variables de entorno desde .env |
+| morgan | ^1.10.0 | Logger HTTP requests middleware |
+| express-validator | ^7.2.0 | Validación de datos en peticiones |
+| multer | ^1.4.5-lts.1 | Manejo de subida de archivos (PDFs) |
+| pdf-parse | ^1.1.1 | Extracción de texto de archivos PDF |
+
+### Dependencias de IA - Opción OpenAI (Actual)
+| Paquete | Versión | Función |
+|---------|---------|---------|
+| openai | ^4.77.0 | SDK oficial de OpenAI para integración con GPT-4.1-mini |
+
+### Dependencias de IA - Opción Gemini (Recomendado)
+| Paquete | Función |
+|---------|---------|
+| @google/generative-ai | SDK oficial de Google Gemini AI |
+
+Para usar Gemini en lugar de OpenAI, instalar:
+```bash
+npm install @google/generative-ai
+```
+
+Variables de entorno para Gemini en `.env`:
+```
+GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-1.5-flash
+```
+
+---
+
+## DEPENDENCIAS FRONTEND (repositorio-frontend)
+
+### Dependencias de Producción
+| Paquete | Versión | Función |
+|---------|---------|---------|
+| react | ^18.3.1 | Biblioteca de UI para componentes interactivos |
+| react-dom | ^18.3.1 | Renderizado de componentes React en DOM |
+| react-router-dom | ^6.28.0 | Navegación entre páginas en SPA |
+
+### Dependencias de Desarrollo
+| Paquete | Versión | Función |
+|---------|---------|---------|
+| typescript | ~5.6.2 | Tipado estático para JavaScript |
+| vite | ^5.4.10 | Bundler y servidor de desarrollo rápido |
+| @vitejs/plugin-react | ^4.3.3 | Plugin de Vite para soporte React + JSX |
+| @types/react | ^18.3.12 | Tipos TypeScript para React |
+| @types/react-dom | ^18.3.1 | Tipos TypeScript para React DOM |
+
+---
+
+## COMANDOS DE INSTALACIÓN
+
+### Backend
+```bash
+cd repositorio-backend
+npm install
+```
+
+### Frontend
+```bash
+cd repositorio-frontend
+npm install
+```
+
+### Migración de Base de Datos
+```bash
+# Ejecutar migración para crear tabla thesis_chunks (RAG)
+mysql -u root -p < database/migrations/003_thesis_chunks.sql
+```
+
+---
+
+## NOTAS
+
+- El proyecto usa arquitectura limpia (controllers/services/routes)
+- El sistema RAG está implementado con `openai` pero preparado para migrar a `@google/generative-ai` (Gemini)
+- Docker Compose está disponible para despliegue con MySQL incluido
+- Variables de entorno necesarias: `JWT_SECRET`, `OPENAI_API_KEY` (o `GEMINI_API_KEY`)
