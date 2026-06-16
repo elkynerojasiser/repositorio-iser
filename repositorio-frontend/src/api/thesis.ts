@@ -7,13 +7,13 @@ export type ThesisSearchParams = {
   author?: string;
   keyword_name?: string;
   year?: string;
-  program_id?: string;
+  program_id?: string[];
   type?: string;
-  type_id?: string;
+  type_id?: string[];
   line?: string;
-  research_line_id?: string;
+  research_line_id?: string[];
   keyword?: string;
-  keyword_id?: string;
+  keyword_id?: string[];
   limit?: string;
   offset?: string;
   page?: string;
@@ -25,7 +25,11 @@ export async function fetchThesisList(
 ): Promise<ThesisListResponse> {
   const sp = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
-    if (v !== undefined && v !== '') sp.set(k, v);
+    if (Array.isArray(v)) {
+      if (v.length) sp.set(k, v.join(','));
+    } else if (v !== undefined && v !== '') {
+      sp.set(k, v);
+    }
   });
   const q = sp.toString();
   const path = q ? `/api/public/thesis?${q}` : '/api/public/thesis';
