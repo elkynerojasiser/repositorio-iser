@@ -37,11 +37,14 @@
   font-weight: 600;
 }
 
-.field input {
+.field input,
+.field select {
   padding: 0.5rem 0.65rem;
   border: 1px solid var(--border);
   border-radius: 6px;
   background: #fff;
+  font: inherit;
+  height: 38px;
 }
 
 .actions {

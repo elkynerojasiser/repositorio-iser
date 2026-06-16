@@ -18,6 +18,13 @@ const baseKeywordInclude = {
   through: { attributes: [] },
 };
 
+// Normaliza un filtro (número, string CSV o array) a una lista de enteros válidos.
+function toIntList(v) {
+  if (v == null || v === '') return [];
+  const parts = Array.isArray(v) ? v : String(v).split(',');
+  return parts.map((x) => Number(x)).filter((n) => Number.isInteger(n));
+}
+
 function buildIncludes(filters) {
   const {
     keyword,
@@ -38,15 +45,13 @@ function buildIncludes(filters) {
   ];
 
   const kwIdx = 3;
-  if (kwF != null && kwF !== '') {
-    const kid = Number(kwF);
-    if (!Number.isNaN(kid)) {
-      includes[kwIdx] = {
-        ...baseKeywordInclude,
-        where: { id: kid },
-        required: true,
-      };
-    }
+  const kwIds = toIntList(kwF);
+  if (kwIds.length) {
+    includes[kwIdx] = {
+      ...baseKeywordInclude,
+      where: { id: { [Op.in]: kwIds } },
+      required: true,
+    };
   } else if (nameSearch) {
     includes[kwIdx] = {
       ...baseKeywordInclude,
@@ -84,18 +89,13 @@ export async function listPublicTheses(filters = {}) {
   const typeF = type ?? typeIdSnake ?? typeId;
   const lineF = line ?? lineSnake ?? researchLineId;
 
-  if (programF != null && programF !== '') {
-    const n = Number(programF);
-    if (!Number.isNaN(n)) where.programId = n;
-  }
-  if (typeF != null && typeF !== '') {
-    const n = Number(typeF);
-    if (!Number.isNaN(n)) where.typeId = n;
-  }
-  if (lineF != null && lineF !== '') {
-    const n = Number(lineF);
-    if (!Number.isNaN(n)) where.researchLineId = n;
-  }
+  const programIds = toIntList(programF);
+  const typeIds = toIntList(typeF);
+  const lineIds = toIntList(lineF);
+
+  if (programIds.length) where.programId = { [Op.in]: programIds };
+  if (typeIds.length) where.typeId = { [Op.in]: typeIds };
+  if (lineIds.length) where.researchLineId = { [Op.in]: lineIds };
   if (year != null && year !== '') {
     const y = Number(year);
     if (!Number.isNaN(y)) where.year = y;

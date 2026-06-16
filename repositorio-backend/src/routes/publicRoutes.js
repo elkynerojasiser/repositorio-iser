@@ -8,6 +8,10 @@ const router = Router();
 const intQuery = (field) =>
   query(field).optional({ checkFalsy: true }).isInt();
 
+// Acepta un entero o una lista CSV de enteros (filtros multiselect).
+const intListQuery = (field) =>
+  query(field).optional({ checkFalsy: true }).matches(/^\d+(,\d+)*$/);
+
 router.get(
   '/thesis',
   [
@@ -15,18 +19,18 @@ router.get(
     query('title').optional().trim(),
     query('author').optional().trim(),
     intQuery('year'),
-    intQuery('program'),
-    intQuery('program_id'),
-    intQuery('programId'),
-    intQuery('type'),
-    intQuery('type_id'),
-    intQuery('typeId'),
-    intQuery('line'),
-    intQuery('research_line_id'),
-    intQuery('researchLineId'),
-    intQuery('keyword'),
-    intQuery('keyword_id'),
-    intQuery('keywordId'),
+    intListQuery('program'),
+    intListQuery('program_id'),
+    intListQuery('programId'),
+    intListQuery('type'),
+    intListQuery('type_id'),
+    intListQuery('typeId'),
+    intListQuery('line'),
+    intListQuery('research_line_id'),
+    intListQuery('researchLineId'),
+    intListQuery('keyword'),
+    intListQuery('keyword_id'),
+    intListQuery('keywordId'),
     query('keyword_name').optional().trim(),
     query('keywordName').optional().trim(),
     intQuery('limit'),

@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  fetchKeywordCatalog,
+  fetchResearchLines,
+  fetchThesisTypes,
+} from '../api/classification';
+import { fetchAcademicPrograms } from '../api/programs';
 import { fetchThesisList, type ThesisSearchParams } from '../api/thesis';
-import type { ThesisListItem } from '../api/types';
+import type { AcademicProgramRef, ClassificationRef, ThesisListItem } from '../api/types';
+import { MultiSelect } from '../components/MultiSelect';
 import { useAuth } from '../context/AuthContext';
 import styles from './Pages.module.css';
 
@@ -11,10 +18,10 @@ const emptySearch: ThesisSearchParams = {
   author: '',
   keyword_name: '',
   year: '',
-  program_id: '',
-  type_id: '',
-  research_line_id: '',
-  keyword_id: '',
+  program_id: [],
+  type_id: [],
+  research_line_id: [],
+  keyword_id: [],
 };
 
 export function HomePage() {
@@ -24,6 +31,11 @@ export function HomePage() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState<string | null>(null);
   const [filters, setFilters] = useState<ThesisSearchParams>(emptySearch);
+
+  const [programs, setPrograms] = useState<AcademicProgramRef[]>([]);
+  const [thesisTypes, setThesisTypes] = useState<ClassificationRef[]>([]);
+  const [researchLines, setResearchLines] = useState<ClassificationRef[]>([]);
+  const [keywordCatalog, setKeywordCatalog] = useState<ClassificationRef[]>([]);
 
   const load = useCallback(
     async (params: ThesisSearchParams) => {
@@ -49,6 +61,31 @@ export function HomePage() {
     void load({});
   }, [load]);
 
+  useEffect(() => {
+    if (!token) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [progs, types, lines, kws] = await Promise.all([
+          fetchAcademicPrograms(token),
+          fetchThesisTypes(token),
+          fetchResearchLines(token),
+          fetchKeywordCatalog(token),
+        ]);
+        if (cancelled) return;
+        setPrograms(progs);
+        setThesisTypes(types);
+        setResearchLines(lines);
+        setKeywordCatalog(kws);
+      } catch {
+        // Si fallan los catálogos, los filtros quedan vacíos; la búsqueda por texto sigue funcionando.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const params: ThesisSearchParams = {};
@@ -57,10 +94,10 @@ export function HomePage() {
     if (filters.author?.trim()) params.author = filters.author.trim();
     if (filters.keyword_name?.trim()) params.keyword_name = filters.keyword_name.trim();
     if (filters.year?.trim()) params.year = filters.year.trim();
-    if (filters.program_id?.trim()) params.program_id = filters.program_id.trim();
-    if (filters.type_id?.trim()) params.type_id = filters.type_id.trim();
-    if (filters.research_line_id?.trim()) params.research_line_id = filters.research_line_id.trim();
-    if (filters.keyword_id?.trim()) params.keyword_id = filters.keyword_id.trim();
+    if (filters.program_id?.length) params.program_id = filters.program_id;
+    if (filters.type_id?.length) params.type_id = filters.type_id;
+    if (filters.research_line_id?.length) params.research_line_id = filters.research_line_id;
+    if (filters.keyword_id?.length) params.keyword_id = filters.keyword_id;
     void load(params);
   }
 
@@ -73,8 +110,8 @@ export function HomePage() {
     <div>
       <h1 className={styles.pageTitle}>Catálogo público</h1>
       <p className={styles.lead}>
-        Busca por texto, año, programa, tipo, línea o palabra clave (nombre o ID). Resultados
-        paginados (50 por página).
+        Busca por texto, año, programa, tipo, línea o palabra clave. En los selectores puedes elegir
+        varias opciones a la vez. Resultados paginados (50 por página).
       </p>
 
       <form className={styles.search} onSubmit={handleSubmit}>
@@ -121,43 +158,46 @@ export function HomePage() {
               onChange={(e) => setFilters((f) => ({ ...f, year: e.target.value }))}
             />
           </label>
-          <label className={styles.field}>
-            <span>ID programa</span>
-            <input
-              type="number"
-              min={1}
-              placeholder="Opcional"
-              value={filters.program_id ?? ''}
-              onChange={(e) => setFilters((f) => ({ ...f, program_id: e.target.value }))}
+          <div className={styles.field}>
+            <span>Programa</span>
+            <MultiSelect
+              label="Programa"
+              options={programs}
+              value={filters.program_id ?? []}
+              onChange={(next) => setFilters((f) => ({ ...f, program_id: next }))}
+              placeholder="Todos"
             />
-          </label>
-          <label className={styles.field}>
-            <span>ID tipo</span>
-            <input
-              type="number"
-              min={1}
-              value={filters.type_id ?? ''}
-              onChange={(e) => setFilters((f) => ({ ...f, type_id: e.target.value }))}
+          </div>
+          <div className={styles.field}>
+            <span>Tipo</span>
+            <MultiSelect
+              label="Tipo"
+              options={thesisTypes}
+              value={filters.type_id ?? []}
+              onChange={(next) => setFilters((f) => ({ ...f, type_id: next }))}
+              placeholder="Todos"
             />
-          </label>
-          <label className={styles.field}>
-            <span>ID línea inv.</span>
-            <input
-              type="number"
-              min={1}
-              value={filters.research_line_id ?? ''}
-              onChange={(e) => setFilters((f) => ({ ...f, research_line_id: e.target.value }))}
+          </div>
+          <div className={styles.field}>
+            <span>Línea de investigación</span>
+            <MultiSelect
+              label="Línea"
+              options={researchLines}
+              value={filters.research_line_id ?? []}
+              onChange={(next) => setFilters((f) => ({ ...f, research_line_id: next }))}
+              placeholder="Todas"
             />
-          </label>
-          <label className={styles.field}>
-            <span>ID palabra clave</span>
-            <input
-              type="number"
-              min={1}
-              value={filters.keyword_id ?? ''}
-              onChange={(e) => setFilters((f) => ({ ...f, keyword_id: e.target.value }))}
+          </div>
+          <div className={styles.field}>
+            <span>Palabra clave</span>
+            <MultiSelect
+              label="Palabra clave"
+              options={keywordCatalog}
+              value={filters.keyword_id ?? []}
+              onChange={(next) => setFilters((f) => ({ ...f, keyword_id: next }))}
+              placeholder="Todas"
             />
-          </label>
+          </div>
         </div>
         <div className={styles.actions}>
           <button type="submit" className={styles.primary}>
